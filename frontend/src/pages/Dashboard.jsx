@@ -1,0 +1,36 @@
+// src/pages/Dashboard.jsx
+import React, { useEffect } from "react";
+import Sidebar from "../components/Sidebar";
+import { Outlet } from "react-router-dom";
+import api from "../utils/api"; // import your centralized API
+
+const Dashboard = () => {
+
+  // fetch data when Dashboard loads
+  const fetchData = async () => {
+    try {
+      const res = await api.get('/protected-data');
+      console.log(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  return (
+    <div className="flex">
+      {/* Sidebar stays fixed on the left */}
+      <Sidebar />
+
+      {/* Content on the right */}
+      <div className="flex-1 ml-[60px] mr-[70px] p-5">
+        <Outlet />
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
