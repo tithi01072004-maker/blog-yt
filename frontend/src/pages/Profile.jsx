@@ -74,7 +74,7 @@ const Profile = () => {
     console.log(input);
     try {
       dispatch(setLoading(true))
-      const res = await axios.put("http://localhost:8000/api/v1/user/profile/update", formData, {
+      const res = await axios.put("/api/v1/user/profile/update", formData, {
         headers: {
           "Content-Type": "multipart/form-data"
         },
@@ -124,7 +124,7 @@ const Profile = () => {
       }
 
       const res = await axios.put(
-        "http://localhost:8000/api/v1/user/profile",
+        "/api/v1/user/profile",
         data,
         { withCredentials: true }
       )
