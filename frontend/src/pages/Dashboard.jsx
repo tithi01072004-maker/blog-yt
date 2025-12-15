@@ -29,7 +29,7 @@ const Dashboard = () => {
       {/* Content on the right */}
       <div className="flex-1 min-h-screen">
         <Outlet />
-        <Footer/>
+       
       </div>
     </div>
   );
