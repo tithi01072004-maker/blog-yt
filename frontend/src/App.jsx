@@ -3,9 +3,6 @@ import { useSelector } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { useAuthCheck } from './hooks/useAuthCheck';
 import ProtectedRoute from './components/ProtectedRoute';
-import { useDispatch } from 'react-redux';
-import { setUser } from '@/redux/authSlice';
-
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -33,23 +30,25 @@ const router = createBrowserRouter([
   { path: "/blogs/:blogId", element: <><Navbar /><BlogView /></> },
   {
     path: "/dashboard",
-    element: <><Navbar /><Dashboard /><Footer /></>, // parent layout
+    element: (
+      <ProtectedRoute>
+        <Navbar />
+        <Dashboard />
+      </ProtectedRoute>
+    ),
     children: [
-      { path: "profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
-      { path: "your-blog", element: <ProtectedRoute><YourBlog /></ProtectedRoute> },
-      { path: "comments", element: <ProtectedRoute><Comments /></ProtectedRoute> },
-      { path: "write-blog", element: <ProtectedRoute><CreateBlog /></ProtectedRoute> },
-      { path: "write-blog/:blogId", element: <ProtectedRoute><UpdateBlog /></ProtectedRoute> }
-
+      { path: "profile", element: <Profile /> },
+      { path: "your-blog", element: <YourBlog /> },
+      { path: "comments", element: <Comments /> },
+      { path: "write-blog", element: <CreateBlog /> },
+      { path: "write-blog/:id", element: <UpdateBlog /> }
     ]
   }
-
 ]);
 
 const App = () => {
   const { theme } = useSelector(store => store.theme);
   const { checkAuth } = useAuthCheck();
-  const dispatch = useDispatch()
 
   useEffect(() => {
     if (theme === "dark") document.documentElement.classList.add("dark");
@@ -58,7 +57,7 @@ const App = () => {
 
   useEffect(() => {
     checkAuth(); // runs once on app load
-  }, []);
+  }, [checkAuth]);
 
   return <RouterProvider router={router} />;
 };

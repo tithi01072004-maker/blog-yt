@@ -1,23 +1,21 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-const blogSlice = createSlice({
-  name: "blog",
-  initialState: {
-    loading: false,
-    blog: [] // fix: use empty array
-  },
-  reducers: {
-    setLoading: (state, action) => {
-      state.loading = action.payload;
+const blogSlice=createSlice({
+    name:"blog",
+    initialState:{
+        loading:false,
+        blog:null
     },
-    setBlog: (state, action) => {
-      state.blog = action.payload;
-    },
-    addBlog: (state, action) => {
-      state.blog.push(action.payload); // optional: for creating new blog
+    reducers:{
+        //actions
+        setLoading:(state,action)=>{
+            state.loading=action.payload;
+        },
+         setBlog:(state,action)=>{
+            state.blog=action.payload;
+        }
     }
-  }
-});
+})
+export const {setLoading,setBlog}=blogSlice.actions;
 
-export const { setLoading, setBlog, addBlog } = blogSlice.actions;
 export default blogSlice.reducer;

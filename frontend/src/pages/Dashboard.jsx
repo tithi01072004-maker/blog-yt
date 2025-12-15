@@ -3,7 +3,6 @@ import React, { useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import { Outlet } from "react-router-dom";
 import api from "../utils/api"; // import your centralized API
-import Footer from "@/components/Footer";
 
 const Dashboard = () => {
 
@@ -29,7 +28,6 @@ const Dashboard = () => {
       {/* Content on the right */}
       <div className="flex-1 ml-[60px] mr-[70px] p-5">
         <Outlet />
-       
       </div>
     </div>
   );

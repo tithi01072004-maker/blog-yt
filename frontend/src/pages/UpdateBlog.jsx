@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React, { useEffect, useRef, useState } from "react";
 import JoditEditor from "jodit-react";
-import { toast } from "sonner";
+import { toast } from 'sonner';
 import { setBlog } from "../redux/blogSlice";
-import api from "../api/api";
+
+
 import {
   Select,
   SelectContent,
@@ -19,51 +20,43 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
+import axios from "axios";
 import { Loader2 } from "lucide-react";
+
 
 const UpdateBlog = () => {
   const editor = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { id } = useParams();
 
   const { blog, loading } = useSelector((store) => store.blog);
 
-  const [localLoading, setLocalLoading] = useState(true);
+  // ✅ FIX: useParams must match route param name
+  const { id } = useParams();
+
+  const selectBlog = Array.isArray(blog) ? blog.find((item) => item._id === id) : null;
+
+
+  if (!selectBlog && loading) {
+    return <div className="text-center text-xl p-10">Loading blog...</div>;
+  }
+
+
+
+  // STEP 2 — Prevent crash (shows loading first)
   const [content, setContent] = useState("");
-  const [publish, setPublish] = useState(false);
+
+  const [publish, setPublish] = useState(false)
+
   const [blogData, setBlogData] = useState({
     title: "",
     subtitle: "",
     category: "",
-    thumbnail: null,
   });
+
   const [previewThumbnail, setPreviewThumbnail] = useState("");
 
-  const selectBlog = Array.isArray(blog) ? blog.find((item) => item._id === id) : null;
-
-  // Fetch blog if not in state
-  useEffect(() => {
-    const fetchSingleBlog = async () => {
-      try {
-        const res = await api.get(`/api/v1/blog/${id}`, { withCredentials: true });
-
-        if (res.data.success) {
-          dispatch(setBlog([res.data.blog]));
-        }
-      } catch {
-        toast.error("Blog not found");
-        navigate("/dashboard/your-blog");
-      } finally {
-        setLocalLoading(false);
-      }
-    };
-
-    if (!selectBlog && id) fetchSingleBlog();
-    else setLocalLoading(false);
-  }, [id, selectBlog, dispatch, navigate]);
-
-  // Fill form once blog is loaded
+  // STEP 3 — Fill data once blog is loaded
   useEffect(() => {
     if (selectBlog) {
       setContent(selectBlog.description || "");
@@ -71,18 +64,20 @@ const UpdateBlog = () => {
         title: selectBlog.title || "",
         subtitle: selectBlog.subtitle || "",
         category: selectBlog.category || "",
-        thumbnail: null,
       });
-      setPreviewThumbnail(selectBlog.thumbnail || "");
+      setPreviewThumbnail(selectBlog.thumbnail);
     }
   }, [selectBlog]);
 
-  if (localLoading || !selectBlog)
-    return <div className="text-center text-xl p-10">Loading blog...</div>;
 
+
+  // FORM HANDLERS
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setBlogData((prev) => ({ ...prev, [name]: value }));
+    setBlogData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const getSelectedCategory = (value) => {
@@ -91,36 +86,56 @@ const UpdateBlog = () => {
 
   const selectThumbnail = (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    setBlogData((prev) => ({ ...prev, thumbnail: file }));
+    if (file) {
+      setBlogData((prev) => ({ ...prev, thumbnail: file }));
 
-    const reader = new FileReader();
-    reader.onloadend = () => setPreviewThumbnail(reader.result);
-    reader.readAsDataURL(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewThumbnail(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
+  // UPDATE BLOG HANDLER
   const updateBlogHandler = async () => {
     const formData = new FormData();
-    formData.append("title", blogData.title || selectBlog.title);
-    formData.append("subtitle", blogData.subtitle || selectBlog.subtitle);
-    formData.append("description", content || selectBlog.description);
-    formData.append("category", blogData.category || selectBlog.category);
-    if (blogData.thumbnail) formData.append("thumbnail", blogData.thumbnail);
+    formData.append("title", blogData.title);
+    formData.append("subtitle", blogData.subtitle);
+    formData.append("description", content);
+    formData.append("category", blogData.category);
+
+    if (blogData.thumbnail) {
+      formData.append("file", blogData.thumbnail);
+    }
 
     try {
       dispatch(setLoading(true));
-      const token = localStorage.getItem("token");
-      const res = await api.put(`/api/v1/blog/${id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+
+      const token = localStorage.getItem("token"); // read token
+
+      const res = await axios.put(
+        `/api/v1/blog/${id}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}` // attach token
+          },
+          withCredentials: true, // optional if using cookies
+        }
+      );
+
+
+
+
 
       if (res.data.success) {
         toast.success("Blog updated successfully!");
         navigate("/dashboard/your-blog");
+
+
       }
     } catch (error) {
-      console.log(error.response?.data || error.message);
+      console.log(error);
       toast.error("Failed to update blog");
     } finally {
       dispatch(setLoading(false));
@@ -129,91 +144,214 @@ const UpdateBlog = () => {
 
   const togglePublishUnpublish = async (action) => {
     try {
-      const res = await api.patch(`/blog/${id}`, { action }, { withCredentials: true });
+      const res = await axios.patch(
+        `/api/v1/blog/${id}`,
+        { action }, // ✅ send in body
+        { withCredentials: true }
+      )
       if (res.data.success) {
         setPublish(!publish);
-        toast.success(res.data.message);
-        navigate("/dashboard/your-blog");
+        toast.success(res.data.message)
+        navigate("/dashboard/your-blog")
+      } else {
+        toast.error("Failed to update")
       }
-    } catch {
-      toast.error("Server error");
+
+    } catch (error) {
+      console.log(error)
+      toast.error(error?.response?.data?.message || "Server error");
+
     }
-  };
+  }
 
   const deleteBlog = async () => {
     try {
-      const res = await api.delete(`/blog/delete/${id}`, { withCredentials: true });
+      const res = await axios.delete(`/api/v1/blog/delete/${id}`, { withCredentials: true })
       if (res.data.success) {
-        const updated = blog.filter((b) => b._id !== id);
-        dispatch(setBlog(updated));
-        toast.success(res.data.message);
-        navigate("/dashboard/your-blog");
+        const updatedBlogData = blog.filter((blogItem) => blogItem?._id !== id);
+        dispatch(setBlog(updatedBlogData))
+        toast.success(res.data.message)
+        navigate('/dashboard/your-blog')
       }
-    } catch {
-      toast.error("Something went wrong");
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went error")
+
     }
-  };
+  }
 
   return (
     <div className="md:ml-[330px] pt-20 px-3 pb-10">
       <div className="max-w-6xl mx-auto mt-8">
         <Card className="w-full bg-white dark:bg-gray-800 p-5 -space-y-2">
-          <h1 className="text-4xl font-bold text-green-900 dark:text-gray-200" style={{ fontFamily: "'Satisfy', cursive" }}>
+          <h1
+            className="text-4xl font-bold text-green-900 dark:text-gray-200"
+            style={{ fontFamily: "'Satisfy', cursive" }}
+          >
             Basic Blog Information
           </h1>
+
           <p style={{ fontFamily: "'Lora', serif", fontWeight: "500" }}>
             Make changes to your blog here. Click publish when you are done.
           </p>
 
-          <div className="flex gap-3 my-3">
-            <Button
-              onClick={() => togglePublishUnpublish(selectBlog?.isPublished ? "false" : "true")}
+          <div className="flex gap-3">
+            <Button onClick={() => togglePublishUnpublish(selectBlog.isPublished ? "false" : "true")}
               className="bg-green-800 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600"
+              style={{ fontFamily: "'Lobster', cursive" }}
+
             >
-              {selectBlog?.isPublished ? "Unpublish" : "Publish"}
+              {
+                selectBlog.isPublished ? "Unpublish" : "Publish"
+              }
             </Button>
 
-            <Button onClick={deleteBlog} variant="destructive" className="dark:bg-red-600 dark:hover:bg-red-700">
+            <Button onClick={deleteBlog}
+              variant="destructive"
+              className="dark:bg-red-600 dark:hover:bg-red-700"
+              style={{ fontFamily: "'Lobster', cursive" }}
+            >
               Remove Blog
             </Button>
           </div>
 
-          <Label className="text-2xl font-medium text-green-900 dark:text-gray-200">Title</Label>
-          <Input type="text" name="title" value={blogData.title} onChange={handleChange} />
+          {/* TITLE */}
+          <div>
+            <Label
+              className="text-2xl font-medium text-green-900 dark:text-gray-200"
+              style={{ fontFamily: "'Lobster', cursive" }}
+            >
+              Title
+            </Label>
+            <Input
+              type="text"
+              placeholder="Enter a title"
+              name="title"
+              value={blogData.title}
+              onChange={handleChange}
+              className="dark:border-gray-300"
+            />
+          </div>
 
-          <Label className="text-2xl font-medium text-green-900 dark:text-gray-200 mt-3">Subtitle</Label>
-          <Input type="text" name="subtitle" value={blogData.subtitle} onChange={handleChange} />
+          {/* SUBTITLE */}
+          <div>
+            <Label
+              className="text-2xl font-medium text-green-900 dark:text-gray-200"
+              style={{ fontFamily: "'Lobster', cursive" }}
+            >
+              Subtitle
+            </Label>
+            <Input
+              type="text"
+              placeholder="Enter a subtitle"
+              name="subtitle"
+              value={blogData.subtitle}
+              onChange={handleChange}
+              className="dark:border-gray-300"
+            />
+          </div>
 
-          <Label className="text-2xl font-medium text-green-900 dark:text-gray-200 mt-3">Description</Label>
-          <JoditEditor ref={editor} value={content} onChange={(newContent) => setContent(newContent)} />
+          {/* DESCRIPTION */}
+          <div>
+            <Label
+              className="text-2xl font-medium text-green-900 dark:text-gray-200"
+              style={{ fontFamily: "'Lobster', cursive" }}
+            >
+              Description
+            </Label>
 
-          <Label className="text-2xl font-medium text-green-900 dark:text-gray-200 mt-3">Category</Label>
-          <Select value={blogData.category} onValueChange={getSelectedCategory}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Category</SelectLabel>
-                <SelectItem value="Web Development">Web Development</SelectItem>
-                <SelectItem value="Machine Learning">Machine Learning</SelectItem>
-                <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
-                <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
-                <SelectItem value="Photography">Photography</SelectItem>
-                <SelectItem value="Cooking">Cooking</SelectItem>
-                <SelectItem value="Blogging">Blogging</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            <JoditEditor
+              ref={editor}
+              className='jodit_toolbar'
+              value={content}
+              onChange={(newContent) => setContent(newContent)}
+            />
+          </div>
 
-          <Label className="text-2xl font-medium text-green-900 dark:text-gray-200 mt-3">Thumbnail</Label>
-          <Input type="file" accept="image/*" onChange={selectThumbnail} />
-          {previewThumbnail && <img src={previewThumbnail} alt="Preview" className="mt-2 w-40 h-28 object-cover rounded-lg" />}
+          {/* CATEGORY */}
+          <div>
+            <Label
+              className="mb-1 text-2xl font-medium text-green-900 dark:text-gray-200"
+              style={{ fontFamily: "'Lobster', cursive" }}
+            >
+              Category
+            </Label>
 
-          <div className="flex gap-3 mt-5">
-            <Button variant="outline" onClick={() => navigate(-1)}>Back</Button>
-            <Button onClick={updateBlogHandler} className="bg-green-800 dark:bg-green-400 hover:bg-green-700 dark:hover:bg-green-600">
-              {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Please Wait</> : "Save"}
+            <Select onValueChange={getSelectedCategory} className="border-gray-300">
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder={blogData.category || "Select category"} />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Category</SelectLabel>
+                  <SelectItem value="Web Development">Web Development</SelectItem>
+                  <SelectItem value="Machine Learning">Machine Learning</SelectItem>
+                  <SelectItem value="Artificial Intelligence">
+                    Artificial Intelligence
+                  </SelectItem>
+                  <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+                  <SelectItem value="Photography">Photography</SelectItem>
+                  <SelectItem value="Cooking">Cooking</SelectItem>
+                  <SelectItem value="Blogging">Blogging</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* THUMBNAIL */}
+          <div>
+            <Label
+              className="mb-1 text-2xl font-medium text-green-900 dark:text-gray-200"
+              style={{ fontFamily: "'Lobster', cursive" }}
+            >
+              Thumbnail
+            </Label>
+
+            <Input
+              type="file"
+              id='file'
+              accept="image/*"
+              className="w-fit dark:border-gray-300"
+              onChange={selectThumbnail}
+            />
+
+
+            {previewThumbnail && (
+              <img
+                src={previewThumbnail}
+                alt="Preview"
+                className="mt-3 w-40 h-28 rounded-lg object-cover"
+              />
+            )}
+          </div>
+
+          {/* BACK + SAVE */}
+          <div className="flex gap-3 mt-4">
+            <Button
+              className="bg-gray-300"
+              style={{ fontFamily: "'Lobster', cursive" }}
+              variant="outline"
+              onClick={() => navigate(-1)}
+            >
+              Back
+            </Button>
+
+            <Button
+              className="bg-green-800 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600"
+              style={{ fontFamily: "'Lobster', cursive" }}
+              onClick={updateBlogHandler}
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                  Please Wait
+                </>
+              ) : (
+                "Save"
+
+              )}
+
             </Button>
           </div>
         </Card>
