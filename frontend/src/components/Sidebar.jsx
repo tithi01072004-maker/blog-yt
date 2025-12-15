@@ -7,7 +7,7 @@ import { NavLink } from 'react-router-dom'
 const Sidebar = () => {
   return (
     /* Remove fixed and h-screen */
-    <div className='hidden md:block border-r-5 dark:bg-gray-800 bg-white border-gray-200 dark:border-gray-700 w-[300px] p-10 space-y-2'>
+        <div className='hidden mt-10 fixed md:block border-r-5  dark:bg-gray-800 bg-white border-gray-200 dark:border-gray-700 w-[300px] p-10 space-y-2 h-screen z-10'>
 
       <div
         className="text-center pt-6 px-3 space-y-2 text-2xl font-bold text-black dark:text-white"
