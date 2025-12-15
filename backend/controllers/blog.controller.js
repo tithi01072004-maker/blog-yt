@@ -32,53 +32,44 @@ export const createBlog = async (req, res) => {
 }
 
 export const updateBlog = async (req, res) => {
-  try {
-    const blogId = req.params.id;
-    const { title, subtitle, description, category } = req.body;
-    const file = req.file;
+    try {
+        const blogId = req.params.blogId
+        const { title, subtitle, description, category } = req.body;
+        const file = req.file;
 
-    let blog = await Blog.findById(blogId);
-    if (!blog) {
-      return res.status(404).json({
-        success: false,
-        message: "Blog not found"
-      });
+
+        let blog = await Blog.findById(blogId)
+        if (!blog) {
+            return res.status(404).json({
+                message: "Blog not found"
+            })
+        }
+
+        let thumbnail;
+        if (file) {
+            const fileUri = getDataUri(file)
+            thumbnail = await cloudinary.uploader.upload(fileUri)
+        }
+
+        const updateData = { title, subtitle, description, category, author: req.id, thumbnail: thumbnail?.secure_url }
+
+        blog = await Blog.findByIdAndUpdate(blogId, updateData, { new: true })
+
+        res.status(200).json({
+            success: true,
+            message: "Blog updated successfully",
+            blog
+        })
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "Error updating blog."
+        })
+
     }
-
-    let thumbnail;
-    if (file) {
-      const fileUri = getDataUri(file);
-      thumbnail = await cloudinary.uploader.upload(fileUri);
-    }
-
-    const updateData = {
-      title,
-      subtitle,
-      description,
-      category
-    };
-
-    if (thumbnail?.secure_url) {
-      updateData.thumbnail = thumbnail.secure_url;
-    }
-
-    blog = await Blog.findByIdAndUpdate(blogId, updateData, { new: true });
-
-    res.status(200).json({
-      success: true,
-      message: "Blog updated successfully",
-      blog
-    });
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      success: false,
-      message: "Error updating blog."
-    });
-  }
-};
-
+}
 
 export const getOwnBlogs = async (req, res) => {
     try {
