@@ -1,22 +1,22 @@
-import { useDispatch } from "react-redux";
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/redux/authSlice';
+import axios from 'axios';
+import { useEffect } from 'react';
 
 export const useAuthCheck = () => {
-  const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-  const checkAuth = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:3000/api/v1/user/me",
-        { withCredentials: true }
-      );
+    const checkAuth = async () => {
+        try {
+            const { data } = await axios.get(
+                'https://blog-yt-2-6xw0.onrender.com/api/v1/user/me', 
+                { withCredentials: true }
+            );
+            dispatch(setUser(data.user)); // ✅ use dispatch
+        } catch (error) {
+            console.log("Not logged in");
+        }
+    };
 
-      if (res.data.success) {
-        dispatch(setUser(res.data.user));
-      }
-    } catch {
-      dispatch(setUser(null)); // sets loading = false
-    }
-  };
-
-  return { checkAuth };
+    return { checkAuth };
 };

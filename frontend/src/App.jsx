@@ -3,6 +3,9 @@ import { useSelector } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { useAuthCheck } from './hooks/useAuthCheck';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useDispatch } from 'react-redux';
+import { setUser } from '@/redux/authSlice';
+
 
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -45,6 +48,7 @@ const router = createBrowserRouter([
 const App = () => {
   const { theme } = useSelector(store => store.theme);
   const { checkAuth } = useAuthCheck();
+  const dispatch=useDispatch()
 
   useEffect(() => {
     if (theme === "dark") document.documentElement.classList.add("dark");
