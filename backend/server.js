@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import connectDB from "./database/db.js";
 import userRoute from "./routes/user.route.js";
 import blogRoute from "./routes/blog.route.js";
-import commentRoute from "./routes/comment.route.js"
+import commentRoute from "./routes/comment.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { isAuthenticated } from "./middleware/isAuthenticated.js";
@@ -32,7 +32,7 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 3000;
 
-// -------------------- ROUTES --------------------
+// -------------------- API ROUTES --------------------
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/blog", blogRoute);
 app.use("/api/v1/comment", commentRoute);
@@ -41,8 +41,9 @@ app.put("/api/v1/user/profile/update", isAuthenticated, updateProfile);
 // -------------------- SERVE FRONTEND --------------------
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
-app.get("/.*/", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+// Catch-all for React SPA
+app.get('/:any(.*)', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
 });
 
 // -------------------- START SERVER --------------------
