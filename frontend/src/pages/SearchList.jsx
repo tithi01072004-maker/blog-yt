@@ -10,12 +10,14 @@ const SearchList = () => {
     const query=params.get('q');
     const {blog}=useSelector(store=>store.blog)
 
-    const filteredBlogs=blog.filter(
-        (blog)=>
-            blog.title.toLowerCase().includes(query) || 
-        blog.subtitle.toLowerCase().includes(query) ||
-        blog.category.toLowerCase()===query.toLowerCase()
-    )
+   const safeQuery = query?.toLowerCase() || "";
+
+const filteredBlogs = (blog || []).filter((item) =>
+  item?.title?.toLowerCase().includes(safeQuery) ||
+  item?.subtitle?.toLowerCase().includes(safeQuery) ||
+  item?.category?.toLowerCase().includes(safeQuery)
+);
+
 
     useEffect(()=>{
         window.scrollTo(0,0)

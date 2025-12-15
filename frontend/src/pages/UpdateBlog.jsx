@@ -96,51 +96,40 @@ const UpdateBlog = () => {
   };
 
   // UPDATE BLOG HANDLER
-  const updateBlogHandler = async () => {
-    const formData = new FormData();
-    formData.append("title", blogData.title);
-    formData.append("subtitle", blogData.subtitle);
-    formData.append("description", content);
-    formData.append("category", blogData.category);
+const updateBlogHandler = async () => {
+  const formData = new FormData();
 
-    if (blogData.thumbnail) {
-      formData.append("file", blogData.thumbnail);
+  formData.append("title", blogData.title);
+  formData.append("subtitle", blogData.subtitle);
+  formData.append("description", content);
+  formData.append("category", blogData.category);
+
+  // ✅ THIS LINE (VERY IMPORTANT)
+  if (blogData.thumbnail) {
+    formData.append("thumbnail", blogData.thumbnail);
+  }
+
+  try {
+    dispatch(setLoading(true));
+
+    const res = await axios.put(
+      `/api/v1/blog/${id}`,
+      formData,
+      { withCredentials: true }
+    );
+
+    if (res.data.success) {
+      toast.success("Blog updated successfully!");
+      navigate("/dashboard/your-blog");
     }
+  } catch (error) {
+    console.log(error.response?.data || error);
+    toast.error("Failed to update blog");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
 
-    try {
-      dispatch(setLoading(true));
-
-      const token = localStorage.getItem("token"); // read token
-
-      const res = await axios.put(
-        `/api/v1/blog/${id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}` // attach token
-          },
-          withCredentials: true, // optional if using cookies
-        }
-      );
-
-
-
-
-
-      if (res.data.success) {
-        toast.success("Blog updated successfully!");
-        navigate("/dashboard/your-blog");
-
-
-      }
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to update blog");
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
 
   const togglePublishUnpublish = async (action) => {
     try {
