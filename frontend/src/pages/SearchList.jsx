@@ -7,15 +7,14 @@ import { useLocation } from 'react-router-dom'
 const SearchList = () => {
     const location=useLocation()
     const params=new URLSearchParams(location.search)
-    const query=params.get('q');
+  const query = (params.get('q') || "").toLowerCase();
     const {blog}=useSelector(store=>store.blog)
 
-    const filteredBlogs=blog.filter(
-        (blog)=>
-            blog.title.toLowerCase().includes(query) || 
-        blog.subtitle.toLowerCase().includes(query) ||
-        blog.category.toLowerCase()===query.toLowerCase()
-    )
+    const filteredBlogs = blog.filter((blog) =>
+  blog?.title?.toLowerCase().includes(query) ||
+  blog?.subtitle?.toLowerCase().includes(query) ||
+  blog?.category?.toLowerCase() === query
+);
 
     useEffect(()=>{
         window.scrollTo(0,0)
