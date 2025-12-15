@@ -1,26 +1,20 @@
-import axios from "axios";
-import { setUser } from "../redux/authSlice";
-import { useDispatch } from "react-redux";
-
 export const useAuthCheck = () => {
-    const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-    const checkAuth = async () => {
-        try {
-            const res = await axios.get(
-                "http://localhost:3000/api/v1/user/me",
-                { withCredentials: true }
-            );
+  const checkAuth = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:3000/api/v1/user/me",
+        { withCredentials: true }
+      );
 
-            if (res.data.success) {
-                dispatch(setUser(res.data.user));
-                return true;   // logged in
-            }
-        } catch (error) {
-            dispatch(setUser(null));
-            return false;      // logged out
-        }
-    };
+      if (res.data.success) {
+        dispatch(setUser(res.data.user));
+      }
+    } catch {
+      dispatch(setUser(null)); // sets loading = false
+    }
+  };
 
-    return { checkAuth };
+  return { checkAuth };
 };

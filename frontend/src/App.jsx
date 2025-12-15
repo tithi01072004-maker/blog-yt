@@ -29,21 +29,17 @@ const router = createBrowserRouter([
   { path: "/signup", element: <><Navbar /><Signup /></> },
   { path: "/blogs/:blogId", element: <><Navbar /><BlogView /></> },
   {
-    path: "/dashboard",
-    element: (
-      <ProtectedRoute>
-        <Navbar />
-        <Dashboard />
-      </ProtectedRoute>
-    ),
-    children: [
-      { path: "profile", element: <Profile /> },
-      { path: "your-blog", element: <YourBlog /> },
-      { path: "comments", element: <Comments /> },
-      { path: "write-blog", element: <CreateBlog /> },
-      { path: "write-blog/:id", element: <UpdateBlog /> }
-    ]
-  }
+  path: "/dashboard",
+  element: <><Navbar /><Dashboard /><Footer/></>, // parent layout
+  children: [
+    { path: "profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+    { path: "your-blog", element: <ProtectedRoute><YourBlog /></ProtectedRoute> },
+    { path: "comments", element: <ProtectedRoute><Comments /></ProtectedRoute> },
+    { path: "write-blog", element: <ProtectedRoute><CreateBlog /></ProtectedRoute> },
+    { path: "write-blog/:id", element: <ProtectedRoute><UpdateBlog /></ProtectedRoute> }
+  ]
+}
+
 ]);
 
 const App = () => {
