@@ -44,9 +44,16 @@ app.put("/api/v1/user/profile/update", isAuthenticated, updateProfile);
 app.use(express.static(path.join(_dirname, "frontend/dist")));
 
 // ✅ Wildcard route: send index.html for all non-API routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(_dirname, "frontend/dist", "index.html"));
+// Serve React frontend for all non-API routes
+app.use((req, res, next) => {
+  // Only handle requests that are not API routes
+  if (!req.path.startsWith("/api/")) {
+    res.sendFile(path.join(_dirname, "frontend/dist", "index.html"));
+  } else {
+    next();
+  }
 });
+
 
 // -------------------- SERVER --------------------
 app.listen(PORT, async () => {
