@@ -21,7 +21,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
-import api from "../api/api";
+
 
 import { Loader2 } from "lucide-react";
 
