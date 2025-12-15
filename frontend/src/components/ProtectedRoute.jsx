@@ -1,15 +1,13 @@
-import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
+import { isTokenExpired } from "../utils/token";
 
 const ProtectedRoute = ({ children }) => {
-  const { user } = useSelector(store => store.auth);
+  const token = localStorage.getItem("token");
 
-  // ❌ not logged in → go to home
-  if (!user) {
-    return <Navigate to="/" replace />;
+  if (!token || isTokenExpired(token)) {
+    return <Navigate to="/login" replace />;
   }
 
-  // ✅ logged in → allow access
   return children;
 };
 

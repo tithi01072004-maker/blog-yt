@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { useAuthCheck } from './hooks/useAuthCheck';
 import ProtectedRoute from './components/ProtectedRoute';
-
+import { createHashRouter, RouterProvider } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -19,8 +19,7 @@ import YourBlog from './pages/YourBlog';
 import Comments from './pages/Comments';
 import CreateBlog from './pages/CreateBlog';
 import UpdateBlog from './pages/UpdateBlog';
-
-const router = createBrowserRouter([
+const router = createHashRouter([
   { path: "/", element: <><Navbar /><Home /><Footer /></> },
   { path: "/blogs", element: <><Navbar /><Blogs /><Footer /></> },
   { path: "/about", element: <><Navbar /><About /><Footer /></> },
@@ -45,6 +44,7 @@ const router = createBrowserRouter([
     ]
   }
 ]);
+
 
 const App = () => {
   const { theme } = useSelector(store => store.theme);
