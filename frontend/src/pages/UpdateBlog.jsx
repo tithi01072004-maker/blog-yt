@@ -31,20 +31,49 @@ const UpdateBlog = () => {
   const dispatch = useDispatch();
 
   const { blog, loading } = useSelector((store) => store.blog);
+  const [localLoading, setLocalLoading] = useState(true);
+
 
   // ✅ FIX: useParams must match route param name
   const { id } = useParams();
 
   const selectBlog = Array.isArray(blog) ? blog.find((item) => item._id === id) : null;
+  useEffect(() => {
+  const fetchSingleBlog = async () => {
+    try {
+      const res = await api.get(`/blog/${id}`, {
+        withCredentials: true,
+      });
+
+      if (res.data.success) {
+        dispatch(setBlog([res.data.blog]));
+      }
+    } catch (err) {
+      toast.error("Blog not found");
+      navigate("/dashboard/your-blog");
+    } finally {
+      setLocalLoading(false);
+    }
+  };
+
+  // 👉 fetch ONLY if blog is empty
+ if (!selectBlog && id) {
+  fetchSingleBlog();
+} else {
+  setLocalLoading(false);
+}
+
+}, [id, blog?.length, dispatch, navigate]);
 
 
-  if (!selectBlog) {
-    return (
-      <div className="text-center text-xl p-10">
-        Loading blog...
-      </div>
-    );
-  }
+  if (localLoading) {
+  return (
+    <div className="text-center text-xl p-10">
+      Loading blog...
+    </div>
+  );
+}
+
 
 
 
