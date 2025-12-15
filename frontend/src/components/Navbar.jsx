@@ -35,7 +35,10 @@ import ResponsiveMenu from './ResponsiveMenu'
 
 
 const Navbar = () => {
-    const { user } = useSelector(store => store.auth)
+  const auth = useSelector(store => store.auth);
+const user = auth?.user;
+const loading = auth?.loading;
+
     const { theme } = useSelector(store => store.theme)
     const [searchTerm,setSearchTerm]=useState("")
     const [openNav,setOpenNav]=useState(false)
