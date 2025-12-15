@@ -5,7 +5,7 @@ import { FaFacebook, FaInstagram, FaPinterest, FaTwitterSquare } from 'react-ico
 
 const Footer = () => {
     return (
-        <footer className='mt-8 border-t border-gray-700 bg-gray-100 dark:bg-gray-800 dark:text-gray-200 z-20 relative'>
+        <footer className='mt-8 border-t border-gray-700 bg-gray-100 dark:bg-gray-800 dark:text-gray-200 z-20 relative pt-10 pb-6'>
             <div className='max-w-7xl mx-auto px-4 md:flex md:justify-between'>
                 {/*  info */}
                 <div className='mb-6 md:mb-0'>
