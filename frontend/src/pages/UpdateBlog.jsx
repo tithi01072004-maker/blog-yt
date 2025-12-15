@@ -46,7 +46,8 @@ const UpdateBlog = () => {
   useEffect(() => {
     const fetchSingleBlog = async () => {
       try {
-        const res = await api.get(`/blog/${id}`, { withCredentials: true });
+        const res = await api.get(`/api/v1/blog/${id}`, { withCredentials: true });
+
         if (res.data.success) {
           dispatch(setBlog([res.data.blog]));
         }
@@ -109,10 +110,11 @@ const UpdateBlog = () => {
     try {
       dispatch(setLoading(true));
       const token = localStorage.getItem("token");
-      const res = await api.put(`/blog/${id}`, formData, {
+      const res = await api.put(`/api/v1/blog/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
+
       if (res.data.success) {
         toast.success("Blog updated successfully!");
         navigate("/dashboard/your-blog");
