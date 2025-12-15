@@ -6,8 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 import JoditEditor from "jodit-react";
 import { toast } from 'sonner';
 import { setBlog } from "../redux/blogSlice";
-import api from "../api/api"; 
-
+import api from "../api/api";
 
 import {
   Select,
@@ -39,9 +38,15 @@ const UpdateBlog = () => {
   const selectBlog = Array.isArray(blog) ? blog.find((item) => item._id === id) : null;
 
 
-  if (!selectBlog && loading) {
-    return <div className="text-center text-xl p-10">Loading blog...</div>;
+  if (!selectBlog) {
+    return (
+      <div className="text-center text-xl p-10">
+        Loading blog...
+      </div>
+    );
   }
+
+
 
 
 
@@ -198,15 +203,16 @@ const UpdateBlog = () => {
           </p>
 
           <div className="flex gap-3">
-            <Button onClick={() => togglePublishUnpublish(selectBlog.isPublished ? "false" : "true")}
+            <Button
+              onClick={() =>
+                togglePublishUnpublish(selectBlog?.isPublished ? "false" : "true")
+              }
               className="bg-green-800 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600"
               style={{ fontFamily: "'Lobster', cursive" }}
-
             >
-              {
-                selectBlog.isPublished ? "Unpublish" : "Publish"
-              }
+              {selectBlog?.isPublished ? "Unpublish" : "Publish"}
             </Button>
+
 
             <Button onClick={deleteBlog}
               variant="destructive"
