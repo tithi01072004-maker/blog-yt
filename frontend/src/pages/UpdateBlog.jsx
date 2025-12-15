@@ -99,31 +99,37 @@ const UpdateBlog = () => {
     reader.readAsDataURL(file);
   };
 
-  const updateBlogHandler = async () => {
-    const formData = new FormData();
-    formData.append("title", blogData.title);
-    formData.append("subtitle", blogData.subtitle);
-    formData.append("description", content);
-    formData.append("category", blogData.category);
-    if (blogData.thumbnail) formData.append("file", blogData.thumbnail);
+ // Update blog handler
+const updateBlogHandler = async () => {
+  const formData = new FormData();
+  formData.append("title", blogData.title || selectBlog.title);
+  formData.append("subtitle", blogData.subtitle || selectBlog.subtitle);
+  formData.append("description", content || selectBlog.description);
+  formData.append("category", blogData.category || selectBlog.category);
 
-    try {
-      dispatch(setLoading(true));
-      const token = localStorage.getItem("token");
-      const res = await api.put(`/blog/${id}`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
-      if (res.data.success) {
-        toast.success("Blog updated successfully!");
-        navigate("/dashboard/your-blog");
-      }
-    } catch {
-      toast.error("Failed to update blog");
-    } finally {
-      dispatch(setLoading(false));
+  if (blogData.thumbnail) {
+    formData.append("thumbnail", blogData.thumbnail); // ✅ correct field name
+  }
+
+  try {
+    dispatch(setLoading(true));
+    const token = localStorage.getItem("token");
+    const res = await api.put(`/blog/${id}`, formData, {
+      headers: { Authorization: `Bearer ${token}` },
+      withCredentials: true,
+    });
+    if (res.data.success) {
+      toast.success("Blog updated successfully!");
+      navigate("/dashboard/your-blog");
     }
-  };
+  } catch (error) {
+    console.log(error.response?.data || error.message);
+    toast.error("Failed to update blog");
+  } finally {
+    dispatch(setLoading(false));
+  }
+};
+
 
   const togglePublishUnpublish = async (action) => {
     try {
@@ -194,23 +200,24 @@ const UpdateBlog = () => {
 
           {/* Category */}
           <Label className="text-2xl font-medium text-green-900 dark:text-gray-200 mt-3">Category</Label>
-          <Select onValueChange={getSelectedCategory}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue placeholder={blogData.category || "Select category"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Category</SelectLabel>
-                <SelectItem value="Web Development">Web Development</SelectItem>
-                <SelectItem value="Machine Learning">Machine Learning</SelectItem>
-                <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
-                <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
-                <SelectItem value="Photography">Photography</SelectItem>
-                <SelectItem value="Cooking">Cooking</SelectItem>
-                <SelectItem value="Blogging">Blogging</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          {/* Category */}
+<Select value={blogData.category} onValueChange={getSelectedCategory}>
+  <SelectTrigger className="w-[220px]">
+    <SelectValue placeholder="Select category" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectGroup>
+      <SelectLabel>Category</SelectLabel>
+      <SelectItem value="Web Development">Web Development</SelectItem>
+      <SelectItem value="Machine Learning">Machine Learning</SelectItem>
+      <SelectItem value="Artificial Intelligence">Artificial Intelligence</SelectItem>
+      <SelectItem value="Digital Marketing">Digital Marketing</SelectItem>
+      <SelectItem value="Photography">Photography</SelectItem>
+      <SelectItem value="Cooking">Cooking</SelectItem>
+      <SelectItem value="Blogging">Blogging</SelectItem>
+    </SelectGroup>
+  </SelectContent>
+</Select>
 
           {/* Thumbnail */}
           <Label className="text-2xl font-medium text-green-900 dark:text-gray-200 mt-3">Thumbnail</Label>
