@@ -27,7 +27,7 @@ const Dashboard = () => {
       <Sidebar />
 
       {/* Content on the right */}
-      <div className="flex-1 min-h-screen">
+      <div className="flex-1 ml-[60px] mr-[70px] p-5">
         <Outlet />
        
       </div>
