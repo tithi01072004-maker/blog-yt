@@ -57,7 +57,7 @@ const App = () => {
 
   useEffect(() => {
     checkAuth(); // runs once on app load
-  }, [checkAuth]);
+  }, []);
 
   return <RouterProvider router={router} />;
 };

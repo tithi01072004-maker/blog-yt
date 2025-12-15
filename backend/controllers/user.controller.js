@@ -90,12 +90,12 @@ export const login = async (req, res) => {
 
 return res
   .status(200)
-  .cookie("token", token, { maxAge:24*60*60*1000, httpOnly: true, secure: false, sameSite: "lax" })
+  .cookie("token", token, {httpOnly: true, maxAge:24*60*60*1000,  secure:process.env.NODE_ENV==="production", sameSite:process.env.NODE_ENV==="production" ? "none" : "lax" })
   .json({
     success: true,
     message: `Welcome back ${user.firstName}`,
     user,
-    token // <-- add this!
+    
   });
 
 
