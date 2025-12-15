@@ -27,7 +27,8 @@ app.use(cookieParser());
 // enable CORS (allow frontend at port 5173)
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend
+    origin: ["http://localhost:5173",
+     "https://blog-yt-2-6xw0.onrender.com"], // your frontend
     credentials: true, // important to send cookies
   })
 );
@@ -39,6 +40,10 @@ app.use("/api/v1/comment", commentRoute);
 
 // profile update route (protected)
 app.put("/api/v1/user/profile/update", isAuthenticated, updateProfile);
+
+app.use('/api', (req, res, next) => {
+  res.status(404).json({ message: 'API route not found' });
+});
 
 // -------------------- SERVE FRONTEND --------------------
 app.use(express.static(path.join(_dirname, "frontend/dist")));
