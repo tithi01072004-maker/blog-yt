@@ -41,6 +41,7 @@ const Navbar = () => {
     const [openNav,setOpenNav]=useState(false)
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    
 
     const toggleNav=()=>{
         setOpenNav(!openNav)
@@ -142,14 +143,14 @@ const Navbar = () => {
 
 
 
-                        {
+                        {loading? null:(
                             user ? <div className='ml-7 flex gap-3 items-center'>
 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <Avatar>
-                                            <AvatarImage src={user.photoUrl || userLogo} />
-                                            <AvatarFallback>{user.firstName?.[0] || "U"}</AvatarFallback>
+                                            <AvatarImage src={user?.photoUrl || userLogo} />
+                                            <AvatarFallback>{user?.firstName?.[0] || "U"}</AvatarFallback>
                                         </Avatar>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="w-56" align="start">
@@ -234,6 +235,7 @@ const Navbar = () => {
                                     </Button>
                                 </Link>
                             </div>
+                        )
                         }
                     </div>
                     {

@@ -8,7 +8,7 @@ export const useAuthCheck = () => {
     const checkAuth = async () => {
         try {
             const res = await axios.get(
-                "http://localhost:8000/api/v1/user/me",
+                "/api/v1/user/me",
                 { withCredentials: true }
             );
 
