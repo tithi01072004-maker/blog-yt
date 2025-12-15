@@ -4,9 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React, { useEffect, useRef, useState } from "react";
 import JoditEditor from "jodit-react";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import { setBlog } from "../redux/blogSlice";
-
 import {
   Select,
   SelectContent,
@@ -26,20 +25,27 @@ const UpdateBlog = () => {
   const editor = useRef(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const { blog, loading } = useSelector((store) => store.blog);
+  const { blogId } = useParams(); // match backend route
+  const BASE_URL = "https://blog-yt-2-6xw0.onrender.com";
 
-  const { id } = useParams();
-  const selectBlog = Array.isArray(blog) ? blog.find((item) => item._id === id) : null;
+  const selectBlog = Array.isArray(blog) ? blog.find((item) => item._id === blogId) : null;
 
   const [content, setContent] = useState("");
   const [publish, setPublish] = useState(false);
   const [blogData, setBlogData] = useState({ title: "", subtitle: "", category: "" });
   const [previewThumbnail, setPreviewThumbnail] = useState("");
 
-  const BASE_URL = "https://blog-yt-2-6xw0.onrender.com"; // <-- Your deployed backend
+  // fetch blogs if empty
+  useEffect(() => {
+    if (!blog.length) {
+      axios.get(`${BASE_URL}/api/v1/blog/get-own-blogs`, { withCredentials: true })
+        .then((res) => dispatch(setBlog(res.data.blogs)))
+        .catch((err) => console.log(err));
+    }
+  }, []);
 
-  // Fill data when blog is loaded
+  // fill form when blog is loaded
   useEffect(() => {
     if (selectBlog) {
       setContent(selectBlog.description || "");
@@ -54,9 +60,7 @@ const UpdateBlog = () => {
     }
   }, [selectBlog]);
 
-  if (!selectBlog && !loading) {
-    return <div className="text-center text-xl p-10">Blog not found!</div>;
-  }
+  if (!selectBlog && !loading) return <div className="text-center text-xl p-10">Blog not found!</div>;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -84,24 +88,14 @@ const UpdateBlog = () => {
     formData.append("description", content);
     formData.append("category", blogData.category);
 
-    if (blogData.thumbnail && blogData.thumbnail instanceof File) {
-      formData.append("thumbnail", blogData.thumbnail);
-    }
+    if (blogData.thumbnail instanceof File) formData.append("thumbnail", blogData.thumbnail);
 
     try {
       dispatch(setLoading(true));
-
-      const res = await axios.put(
-        `${BASE_URL}/api/v1/blog/${id}`,
-        formData,
-        { withCredentials: true }
-      );
-
+      const res = await axios.put(`${BASE_URL}/api/v1/blog/${blogId}`, formData, { withCredentials: true });
       if (res.data.success) {
-        // Update Redux state with new blog
-        const updatedBlogs = blog.map(b => b._id === id ? res.data.blog : b);
+        const updatedBlogs = blog.map((b) => (b._id === blogId ? res.data.blog : b));
         dispatch(setBlog(updatedBlogs));
-
         toast.success("Blog updated successfully!");
         navigate("/dashboard/your-blog");
       }
@@ -115,21 +109,13 @@ const UpdateBlog = () => {
 
   const togglePublishUnpublish = async (action) => {
     try {
-      const res = await axios.patch(
-        `${BASE_URL}/api/v1/blog/${id}`,
-        { action },
-        { withCredentials: true }
-      );
-
+      const res = await axios.patch(`${BASE_URL}/api/v1/blog/${blogId}`, { action }, { withCredentials: true });
       if (res.data.success) {
         setPublish(!publish);
-        toast.success(res.data.message);
-        // Update Redux state
-        const updatedBlogs = blog.map(b => b._id === id ? { ...b, isPublished: !publish } : b);
+        const updatedBlogs = blog.map((b) => (b._id === blogId ? { ...b, isPublished: !publish } : b));
         dispatch(setBlog(updatedBlogs));
+        toast.success(res.data.message);
         navigate("/dashboard/your-blog");
-      } else {
-        toast.error("Failed to update");
       }
     } catch (error) {
       console.log(error);
@@ -139,9 +125,9 @@ const UpdateBlog = () => {
 
   const deleteBlogHandler = async () => {
     try {
-      const res = await axios.delete(`${BASE_URL}/api/v1/blog/delete/${id}`, { withCredentials: true });
+      const res = await axios.delete(`${BASE_URL}/api/v1/blog/delete/${blogId}`, { withCredentials: true });
       if (res.data.success) {
-        const updatedBlogs = blog.filter(b => b._id !== id);
+        const updatedBlogs = blog.filter((b) => b._id !== blogId);
         dispatch(setBlog(updatedBlogs));
         toast.success(res.data.message);
         navigate("/dashboard/your-blog");
@@ -164,49 +150,31 @@ const UpdateBlog = () => {
           </p>
 
           <div className="flex gap-3">
-            <Button
-              onClick={() => togglePublishUnpublish(selectBlog.isPublished ? "false" : "true")}
-              className="bg-green-800 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600"
-              style={{ fontFamily: "'Lobster', cursive" }}
-            >
+            <Button onClick={() => togglePublishUnpublish(selectBlog.isPublished ? "false" : "true")} className="bg-green-800 hover:bg-green-700 dark:bg-green-400 dark:hover:bg-green-600" style={{ fontFamily: "'Lobster', cursive" }}>
               {selectBlog.isPublished ? "Unpublish" : "Publish"}
             </Button>
-
-            <Button
-              onClick={deleteBlogHandler}
-              variant="destructive"
-              className="dark:bg-red-600 dark:hover:bg-red-700"
-              style={{ fontFamily: "'Lobster', cursive" }}
-            >
+            <Button onClick={deleteBlogHandler} variant="destructive" className="dark:bg-red-600 dark:hover:bg-red-700" style={{ fontFamily: "'Lobster', cursive" }}>
               Remove Blog
             </Button>
           </div>
 
           <div>
-            <Label className="text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>
-              Title
-            </Label>
+            <Label className="text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>Title</Label>
             <Input type="text" placeholder="Enter a title" name="title" value={blogData.title} onChange={handleChange} className="dark:border-gray-300" />
           </div>
 
           <div>
-            <Label className="text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>
-              Subtitle
-            </Label>
+            <Label className="text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>Subtitle</Label>
             <Input type="text" placeholder="Enter a subtitle" name="subtitle" value={blogData.subtitle} onChange={handleChange} className="dark:border-gray-300" />
           </div>
 
           <div>
-            <Label className="text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>
-              Description
-            </Label>
-            <JoditEditor ref={editor} className='jodit_toolbar' value={content} onChange={setContent} />
+            <Label className="text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>Description</Label>
+            <JoditEditor ref={editor} className="jodit_toolbar" value={content} onChange={setContent} />
           </div>
 
           <div>
-            <Label className="mb-1 text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>
-              Category
-            </Label>
+            <Label className="mb-1 text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>Category</Label>
             <Select onValueChange={getSelectedCategory} className="border-gray-300">
               <SelectTrigger className="w-[220px]">
                 <SelectValue placeholder={blogData.category || "Select category"} />
@@ -227,10 +195,8 @@ const UpdateBlog = () => {
           </div>
 
           <div>
-            <Label className="mb-1 text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>
-              Thumbnail
-            </Label>
-            <Input type="file" id='file' accept="image/*" className="w-fit dark:border-gray-300" onChange={selectThumbnail} />
+            <Label className="mb-1 text-2xl font-medium text-green-900 dark:text-gray-200" style={{ fontFamily: "'Lobster', cursive" }}>Thumbnail</Label>
+            <Input type="file" id="file" accept="image/*" className="w-fit dark:border-gray-300" onChange={selectThumbnail} />
             {previewThumbnail && <img src={previewThumbnail} alt="Preview" className="mt-3 w-40 h-28 rounded-lg object-cover" />}
           </div>
 

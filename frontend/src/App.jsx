@@ -32,23 +32,24 @@ const router = createBrowserRouter([
   { path: "/signup", element: <><Navbar /><Signup /></> },
   { path: "/blogs/:blogId", element: <><Navbar /><BlogView /></> },
   {
-  path: "/dashboard",
-  element: <><Navbar /><Dashboard /><Footer/></>, // parent layout
-  children: [
-    { path: "profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
-    { path: "your-blog", element: <ProtectedRoute><YourBlog /></ProtectedRoute> },
-    { path: "comments", element: <ProtectedRoute><Comments /></ProtectedRoute> },
-    { path: "write-blog", element: <ProtectedRoute><CreateBlog /></ProtectedRoute> },
-    { path: "write-blog/:id", element: <ProtectedRoute><UpdateBlog /></ProtectedRoute> }
-  ]
-}
+    path: "/dashboard",
+    element: <><Navbar /><Dashboard /><Footer /></>, // parent layout
+    children: [
+      { path: "profile", element: <ProtectedRoute><Profile /></ProtectedRoute> },
+      { path: "your-blog", element: <ProtectedRoute><YourBlog /></ProtectedRoute> },
+      { path: "comments", element: <ProtectedRoute><Comments /></ProtectedRoute> },
+      { path: "write-blog", element: <ProtectedRoute><CreateBlog /></ProtectedRoute> },
+      { path: "write-blog/:blogId", element: <ProtectedRoute><UpdateBlog /></ProtectedRoute> }
+
+    ]
+  }
 
 ]);
 
 const App = () => {
   const { theme } = useSelector(store => store.theme);
   const { checkAuth } = useAuthCheck();
-  const dispatch=useDispatch()
+  const dispatch = useDispatch()
 
   useEffect(() => {
     if (theme === "dark") document.documentElement.classList.add("dark");
