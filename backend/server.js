@@ -26,7 +26,6 @@ app.use(
   })
 );
 
-// -------------------- __dirname fix --------------------
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -39,12 +38,10 @@ app.use("/api/v1/comment", commentRoute);
 app.put("/api/v1/user/profile/update", isAuthenticated, updateProfile);
 
 // -------------------- SERVE FRONTEND --------------------
-app.use(express.static(path.join(__dirname, "frontend", "dist")));
-
-// Catch-all for React SPA
-app.get('/:any(.*)', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
-});
+app.use(
+  '/',
+  express.static(path.join(__dirname, 'frontend', 'dist'), { index: 'index.html' })
+);
 
 // -------------------- START SERVER --------------------
 app.listen(PORT, async () => {
