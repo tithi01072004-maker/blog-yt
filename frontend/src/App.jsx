@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { useAuthCheck } from './hooks/useAuthCheck';
 import ProtectedRoute from './components/ProtectedRoute';
-import { createHashRouter, RouterProvider } from 'react-router-dom';
+
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -19,6 +19,7 @@ import YourBlog from './pages/YourBlog';
 import Comments from './pages/Comments';
 import CreateBlog from './pages/CreateBlog';
 import UpdateBlog from './pages/UpdateBlog';
+
 const router = createHashRouter([
   { path: "/", element: <><Navbar /><Home /><Footer /></> },
   { path: "/blogs", element: <><Navbar /><Blogs /><Footer /></> },
@@ -45,18 +46,19 @@ const router = createHashRouter([
   }
 ]);
 
-
 const App = () => {
   const { theme } = useSelector(store => store.theme);
   const { checkAuth } = useAuthCheck();
 
+  // Theme toggle
   useEffect(() => {
     if (theme === "dark") document.documentElement.classList.add("dark");
     else document.documentElement.classList.remove("dark");
   }, [theme]);
 
+  // Auth check on load
   useEffect(() => {
-    checkAuth(); // runs once on app load
+    checkAuth();
   }, [checkAuth]);
 
   return <RouterProvider router={router} />;
